@@ -61,7 +61,7 @@ col2 = Array(:, 2);
 f_osc_corr = 'osc_correction.csv';
 f_osc_no_corr = 'osc_no_correction.csv';
 raw_corr = csvread(f_osc_corr);
-corr_t = raw_corr(:,1);
+corr_t = raw_corr(:,1)-(.4*10^-5);
 corr_v = raw_corr(:,2);
 
 corr_t_1 = corr_t(1:2500/2);
@@ -71,7 +71,7 @@ corr_v_1 = corr_v(1:2500/2);
 corr_v_2 = corr_v(2500/2+1 : 2500);
 
 raw_corr = csvread(f_osc_no_corr);
-corr_t = raw_corr(:,1);
+corr_t = raw_corr(:,1)-(.4*10^-5);
 corr_v = raw_corr(:,2);
 corr_e_1 = corr_t(1:2500/2);
 corr_e_2 = corr_t(2500/2+1: 2500);
@@ -79,8 +79,8 @@ corr_e_2 = corr_t(2500/2+1: 2500);
 corr_ev_1 = corr_v(1:2500/2);
 corr_ev_2 = corr_v(2500/2+1 : 2500);
 
-corr_v_interp1 = interp1(transpose(corr_t_2-(.14*10^(-5))),transpose(corr_v_2), handles.x);
-corr_v_interp2 = interp1(transpose(corr_t_1-corr_t_1(1)-(.14*10^(-5))),transpose(corr_v_1), handles.x);
+corr_v_interp1 = interp1(transpose(corr_t_2),transpose(corr_v_2), handles.x);
+corr_v_interp2 = interp1(transpose(corr_t_1-corr_t_1(13)),transpose(corr_v_1), handles.x);
 
 hold(handles.axes_lh,'on');
 hold(handles.axes_hl,'on');
@@ -102,14 +102,14 @@ handles.plot_vcc_hl_t  = plot(handles.axes_hl,handles.x, double(handles.vcc_hl_t
 handles.plot_vcc_lh_c  = plot(handles.axes_lh,handles.x, double(handles.vcc_lh_c(handles.x)), 'linewidth', 2);
 handles.plot_vcc_hl_c  = plot(handles.axes_hl,handles.x, double(handles.vcc_hl_c(handles.x)),'linewidth', 2);
 
-handles.plot_lt_lh =plot(handles.axes_lh,col1(1:320), sgolayfilt(col2(1:320),1,31),'r','linewidth', 1);
-handles.plot_lt_hl =plot(handles.axes_hl, col1(321:642)-col1(321),  sgolayfilt(col2(321:642),1,31),'r','linewidth', 1);
+handles.plot_lt_lh =plot(handles.axes_lh,col1(1:320), col2(1:320),'r','linewidth', 1);
+handles.plot_lt_hl =plot(handles.axes_hl, col1(321:642)-col1(321),  col2(321:642),'r','linewidth', 1);
 
-handles.plot_exp_hl = plot(handles.axes_lh, corr_t_2-(.14*10^(-5)), sgolayfilt(corr_v_2, 1, 31), 'linewidth', 2);
-handles.plot_exp_lh = plot(handles.axes_hl, corr_t_1-corr_t_1(1)-(.14*10^(-5)), sgolayfilt(corr_v_1,1,31), 'linewidth', 2);
+handles.plot_exp_hl = plot(handles.axes_lh, corr_t_2, (corr_v_2), 'linewidth', 2);
+handles.plot_exp_lh = plot(handles.axes_hl, corr_t_1-corr_t_1(13), (corr_v_1), 'linewidth', 2);
 
-handles.plot_e_hl = plot(handles.axes_lh, corr_e_2-(.14*10^(-5)), sgolayfilt(corr_ev_2,1,11), 'linewidth', 2);
-handles.plot_e_lh = plot(handles.axes_hl, corr_e_1-corr_e_1(1)-(.14*10^(-5)), sgolayfilt(corr_ev_1,1,31), 'linewidth', 2);
+handles.plot_e_hl = plot(handles.axes_lh, corr_e_2, corr_ev_2, 'linewidth', 2);
+handles.plot_e_lh = plot(handles.axes_hl, corr_e_1-corr_e_1(13), (corr_ev_1), 'linewidth', 2);
 
 handles.err_lh = corr_v_interp1 -double(handles.vcc_lh_c(handles.x)) ;
 handles.err_hl =corr_v_interp2-double(handles.vcc_hl_c(handles.x)) ;
@@ -250,6 +250,7 @@ function pushbutton1_Callback(hObject, eventdata, handles)
 fig = figure('Position', [100, 100, 800, 600]);
 subplot(2,1,1) 
 hold on
+xlim( [0 handles.tmax]);
 plot( handles.x, sgolayfilt(handles.err_hl,1,31), 'linewidth', 2);
 title( 'High to Low Difference', 'Interpreter', 'latex');
 
@@ -259,9 +260,9 @@ hold off
 
 subplot(2,1,2) 
 hold on
+xlim( [0 handles.tmax]);
 title( 'Low to High Difference', 'Interpreter', 'latex');
 plot( handles.x, sgolayfilt(handles.err_lh,1,31), 'linewidth', 2);
 xlabel('Time (s)', 'Interpreter', 'latex');
 ylabel('Voltage (v)','Interpreter', 'latex');
 hold off
-
